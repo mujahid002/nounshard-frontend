@@ -3,22 +3,26 @@ import { ethers } from "ethers";
 export const Nouns = [
   {
     nounId: 1,
-    image: "https://noun.pics/0",
+
+    image: `https://noun.pics/0`,
     price: "0.1",
   },
   {
     nounId: 2,
+
     image: "https://noun.pics/0",
     price: "0.4",
   },
   {
     nounId: 3,
+
     image: "https://noun.pics/0",
     price: "0.5",
   },
 
   {
     nounId: 4,
+
     image: "https://noun.pics/0",
     price: "0.6",
   },
