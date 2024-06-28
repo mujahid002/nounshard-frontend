@@ -9,6 +9,7 @@ import {
   tNounContract,
 } from "@/constants/index";
 import { useGlobalContext } from "../context/Store";
+import { attestNoun } from "@/eas/Attest";
 
 export const FetchNoun = ({ noun }) => {
   const { userAddress, nativeBalance } = useGlobalContext();
@@ -20,7 +21,7 @@ export const FetchNoun = ({ noun }) => {
     noun;
   // const approved=useState(false)
   const expireTime = () => {
-    const now = Date.now();
+    // const now = Date.now();
 
     // Calculate timestamp for one year from now
     const oneYearFromNow = new Date();
@@ -29,7 +30,7 @@ export const FetchNoun = ({ noun }) => {
     return oneYearFromNowTimestamp;
   };
 
-  const fillDetails = (nounId) => {
+  const fillDetails = async (nounId) => {
     const price = document.getElementById("price").value;
     const divisor = document.getElementById("divisor").value;
     if (!price || !divisor) {
@@ -43,19 +44,14 @@ export const FetchNoun = ({ noun }) => {
       divisor: divisor,
       endTimestamp: expireTime(),
     };
+
+    const attestationUid = await attestNoun(data);
+    if (attestationUid) {
+      tokenized = true;
+    }
   };
 
   const approveFirst = async (nounId) => {
-    // const provider = new ethers.BrowserProvider(window.ethereum);
-
-    // await window.ethereum.request({ method: "eth_requestAccounts" });
-
-    // const signer = await provider.getSigner();
-    // console.log("Provider:", signer);
-    // const nounContractWithSigner = signer
-    //   ? new ethers.Contract(NOUN_ADDRESS, NOUN_ABI, signer)
-    //   : null;
-    // const nounContract = nounContractWithSigner?.connect(signer);
     console.log("nounContract", nounContract);
 
     alert(
@@ -82,6 +78,7 @@ export const FetchNoun = ({ noun }) => {
 
       if (receipt.status === 1) {
         alert(`Noun with ID ${nounId} has been approved for tokenization.`);
+        approved = true;
         console.log(
           `Noun with ID ${nounId} has been approved for tokenization.`
         );
@@ -120,7 +117,7 @@ export const FetchNoun = ({ noun }) => {
       </div>
       <div className="text-lg">{nounId}</div>
 
-      {noun.approved && (
+      {approved && (
         <div className="">
           <input
             type="number"
@@ -141,7 +138,7 @@ export const FetchNoun = ({ noun }) => {
         </div>
       )}
 
-      {noun.tokenized ? (
+      {tokenized ? (
         <button
           onClick={() => fillDetails(noun.nounId)}
           className="bg-emerald-50 hover:bg-emerald-500 hover:text-white transition-colors duration-500 text-emerald-500 rounded-md px-5 py-2"
