@@ -1,16 +1,16 @@
 "use client";
 import React, { useState } from "react";
 import { ethers } from "ethers";
-// import Image from "next/image";
 import {
   NOUN_ADDRESS,
   NOUN_ABI,
   TOKENIZED_NOUN_ADDRESS,
+  nounContract,
   tNounContract,
 } from "@/constants/index";
 import { useGlobalContext } from "../context/Store";
 
-export default function FetchNoun({ noun }) {
+export const FetchNoun = ({ noun }) => {
   const { userAddress, nativeBalance } = useGlobalContext();
   // Ensure `noun` is defined before destructuring
   if (!noun) return null;
@@ -46,16 +46,16 @@ export default function FetchNoun({ noun }) {
   };
 
   const approveFirst = async (nounId) => {
-    const provider = new ethers.BrowserProvider(window.ethereum);
+    // const provider = new ethers.BrowserProvider(window.ethereum);
 
-    await window.ethereum.request({ method: "eth_requestAccounts" });
+    // await window.ethereum.request({ method: "eth_requestAccounts" });
 
-    const signer = await provider.getSigner();
-    console.log("Provider:", signer);
-    const nounContractWithSigner = signer
-      ? new ethers.Contract(NOUN_ADDRESS, NOUN_ABI, signer)
-      : null;
-    const nounContract = nounContractWithSigner?.connect(signer);
+    // const signer = await provider.getSigner();
+    // console.log("Provider:", signer);
+    // const nounContractWithSigner = signer
+    //   ? new ethers.Contract(NOUN_ADDRESS, NOUN_ABI, signer)
+    //   : null;
+    // const nounContract = nounContractWithSigner?.connect(signer);
     console.log("nounContract", nounContract);
 
     alert(
@@ -77,10 +77,11 @@ export default function FetchNoun({ noun }) {
           gasPrice: 3000000,
         }
       );
-      const receipt = await tx.wait();
+      const receipt = await trx.wait();
       console.log(receipt);
 
       if (receipt.status === 1) {
+        alert(`Noun with ID ${nounId} has been approved for tokenization.`);
         console.log(
           `Noun with ID ${nounId} has been approved for tokenization.`
         );
@@ -103,14 +104,19 @@ export default function FetchNoun({ noun }) {
     <article className="flex flex-col gap-3 bg-white p-8 rounded-xl shadow-md text-center mb-6">
       <div className="relative w-full h-40">
         {/* <Image
-          src={image} // Use the image property from the object
+          src={`https://noun.pics/${nounId}`} // Use the image property from the object
           alt={`Noun ${nounId}`}
           width={300}
           height={200}
-          unoptimized
+          // unoptimized
           layout="responsive"
           className="rounded-xl"
         /> */}
+        <img
+          src={`https://noun.pics/${nounId}`}
+          className="size-32"
+          alt="demo"
+        />
       </div>
       <div className="text-lg">{nounId}</div>
 
@@ -152,4 +158,4 @@ export default function FetchNoun({ noun }) {
       )}
     </article>
   );
-}
+};
