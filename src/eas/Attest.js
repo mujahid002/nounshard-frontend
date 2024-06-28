@@ -4,8 +4,19 @@ import {
 } from "@ethereum-attestation-service/eas-sdk";
 import { ethers } from "ethers";
 import axios from "axios";
+import { useGlobalContext } from "../context/Store";
+
+import {
+  EAS_ADDRESS,
+  SCHEMA_UID,
+  NOUN_ADDRESS,
+  TOKENIZED_NOUN_ADDRESS,
+  FRACTIONAL_NOUN_ADDRESS,
+} from "@/constants/index";
 
 export const attestNoun = async (data) => {
+  const { userAddress, nativeBalance, setUserAddress, setNativeBalance } =
+    useGlobalContext();
   try {
     if (!data) {
       throw new Error("Invalid input parameters");
@@ -16,14 +27,11 @@ export const attestNoun = async (data) => {
 
     await window.ethereum.request({ method: "eth_requestAccounts" });
 
-    const signer = await provider.getSigner(data.userAddress);
+    const signer = await provider.getSigner(userAddress);
     console.log("Signer:", signer);
 
-    const easContractAddress = "0x4200000000000000000000000000000000000021";
-    const schemaUID = "0";
-
     // Initialize EAS instance
-    const eas = new EAS150(easContractAddress);
+    const eas = new EAS150(EAS_ADDRESS);
 
     // Connect signer to EAS instance
     eas.connect(signer);
@@ -33,17 +41,33 @@ export const attestNoun = async (data) => {
       "address AounAddress, uint256 NounId, address TokenizedNounAddress, address FractionalNounAddress"
     );
     const encodedData = schemaEncoder.encodeData([
-      { name: "Title", value: data.Title, type: "string" },
-      { name: "Owner", value: data.Owner, type: "address" },
-      { name: "canPost", value: data.canPost, type: "bool" },
+      { name: "NounAddress", value: NOUN_ADDRESS, type: "address" },
+      {
+        name: "TokenizedNounAddress",
+        value: TOKENIZED_NOUN_ADDRESS,
+        type: "address",
+      },
+      {
+        name: "FractionalNounAddress",
+        value: FRACTIONAL_NOUN_ADDRESS,
+        type: "address",
+      },
+      { name: "NounId", value: data.nounId, type: "uint256" },
+      {
+        name: "FractionalNounPrice",
+        value: data.eachFNounPrice,
+        type: "uint256",
+      },
+      { name: "EndTimestamp", value: data.endTimestamp, type: "uint48" },
+      { name: "Divisor", value: data.divisor, type: "uint8" },
     ]);
 
     // Attest the data
     const tx = await eas.attest({
-      schema: schemaUID,
+      schema: SCHEMA_UID,
       data: {
-        recipient: data.userAddress,
-        expirationTime: data.expirationTime,
+        recipient: userAddress,
+        expirationTime: data.endTimestamp,
         revocable: false,
         data: encodedData,
       },
@@ -52,12 +76,6 @@ export const attestNoun = async (data) => {
     const newAttestationUID = await tx.wait();
 
     console.log("New attestation UID:", newAttestationUID);
-
-    // Store the attestation data (assuming axios exists)
-    const attestedData = {
-      postData: data,
-      attestUID: newAttestationUID,
-    };
   } catch (error) {
     console.error("Unable to run OnChain Attest: ", error);
     throw error; // Rethrow the error for handling in the calling function
