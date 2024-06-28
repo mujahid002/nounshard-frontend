@@ -76,6 +76,7 @@ export const attestNoun = async (data) => {
     const newAttestationUID = await tx.wait();
 
     console.log("New attestation UID:", newAttestationUID);
+    return newAttestationUID;
   } catch (error) {
     console.error("Unable to run OnChain Attest: ", error);
     throw error; // Rethrow the error for handling in the calling function
