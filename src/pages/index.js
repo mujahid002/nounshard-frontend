@@ -1,6 +1,7 @@
 import React from "react";
-import FetchNoun from "../components/FetchNoun";
+// import {FetchNoun} from "../components/FetchNoun";
 import { Nouns } from "@/data/Nouns";
+import { FetchNoun } from "@/components/FetchNoun";
 
 export default function Home() {
   return (
