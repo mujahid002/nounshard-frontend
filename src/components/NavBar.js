@@ -16,7 +16,7 @@ export default function NavBar() {
       }
 
       const ethereum = window.ethereum;
-      const provider = new ethers.providers.Web3Provider(ethereum);
+      const provider = new ethers.BrowserProvider(ethereum);
 
       // Request account access
       const accounts = await ethereum.request({
@@ -47,7 +47,7 @@ export default function NavBar() {
 
       // Fetch the native balance (ETH)
       const nativeBalance = await provider.getBalance(address);
-      setNativeBalance(ethers.utils.formatEther(nativeBalance));
+      setNativeBalance(ethers.formatEther(nativeBalance));
 
       // Subscribe to account changes
       ethereum.on("accountsChanged", async (newAccounts) => {
@@ -58,13 +58,14 @@ export default function NavBar() {
         // Update balances on account change
         if (newAddress) {
           const newNativeBalance = await provider.getBalance(newAddress);
-          setNativeBalance(ethers.utils.formatEther(newNativeBalance));
+          setNativeBalance(ethers.formatEther(newNativeBalance));
         } else {
           setNativeBalance("0");
         }
       });
     } catch (error) {
-      console.error("Install metamask OR unable to call", error);
+      console.error("Error connecting wallet:", error.message);
+      // Additional error handling logic can be added here
     }
   };
 
@@ -79,6 +80,11 @@ export default function NavBar() {
           {"NounShards"}
         </p>
       </Link>
+      {/* <div className="flex gap-8 items-center">
+        <button className="text-purple-500 cursor-pointer">Nouns</button>
+        <button className="text-purple-500 cursor-pointer">tNouns</button>
+        <button className="text-purple-500 cursor-pointer">fNouns</button>
+      </div> */}
       {userAddress && userAddress.length > 0 ? (
         <div className="flex flex-col items-center">
           <p className="text-purple-500">{userAddress}</p>
