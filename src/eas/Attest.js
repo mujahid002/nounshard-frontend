@@ -72,7 +72,7 @@ export const attestNoun = async (data) => {
       schema: SCHEMA_UID,
       data: {
         recipient: TOKENIZED_NOUN_ADDRESS,
-        expirationTime: data.endTimestamp,
+        expirationTime: data.endTimestamp / 1000,
         revocable: false,
         data: encodedData,
       },
@@ -84,7 +84,7 @@ export const attestNoun = async (data) => {
     alert(`Set Fractional Noun Details to the Contract`);
     const tx = await tNounContract.setTNounIdDetails(
       data.nounId.toString(),
-      data.eachFNounPrice.toString(),
+      fractionalNounPriceInWei.toString(),
       data.divisor.toString(),
       {
         gasPrice: 5000000,

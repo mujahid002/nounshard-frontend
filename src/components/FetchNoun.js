@@ -20,8 +20,16 @@ export const FetchNoun = ({ noun, updateNoun }) => {
     noun;
 
   const expireTime = () => {
-    const oneYearFromNow = new Date();
-    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+    // Get the current UTC time
+    const now = new Date();
+    const utcYear = now.getUTCFullYear();
+    const utcMonth = now.getUTCMonth();
+    const utcDate = now.getUTCDate();
+
+    // Create a new date for one year from now in UTC
+    const oneYearFromNow = new Date(Date.UTC(utcYear + 1, utcMonth, utcDate));
+
+    // Return the epoch time in milliseconds
     return oneYearFromNow.getTime();
   };
 
