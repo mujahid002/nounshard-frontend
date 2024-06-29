@@ -67,45 +67,59 @@ export const attestNoun = async (data) => {
     ]);
 
     // Attest the data
-    try {
-      const trx = await eas.attest({
-        schema: SCHEMA_UID,
-        data: {
-          recipient: TOKENIZED_NOUN_ADDRESS,
-          expirationTime: data.endTimestamp,
-          revocable: false,
-          data: encodedData,
-        },
-      });
-    } catch (error) {
-      if (error.reason) {
-        console.error("Custom Error:", error.reason);
-      } else {
-        console.error("Unknown Error:", error);
-      }
-      throw error; // Re-throw for handling in calling function
-    }
-
+    // try {
+    const trx = await eas.attest({
+      schema: SCHEMA_UID,
+      data: {
+        recipient: TOKENIZED_NOUN_ADDRESS,
+        expirationTime: data.endTimestamp,
+        revocable: false,
+        data: encodedData,
+      },
+    });
     const newAttestationUID = await trx.wait();
 
     console.log("New attestation UID:", newAttestationUID);
-    const attestation = await eas.getAttestation(uid);
 
-    if (attestation.attester == userAddress) {
-      alert(`Set Fractional Noun Details to the Contract`);
-      const trx = await tNounContract.setTNounIdDetails(
-        data.nounId.toString(),
-        data.eachFNounPrice.toString(),
-        data.divisor.toString(),
-        {
-          gasPrice: 5000000,
-        }
-      );
-      const receipt = await trx.wait();
-      if (receipt.status === 1) {
-        return true;
+    alert(`Set Fractional Noun Details to the Contract`);
+    const tx = await tNounContract.setTNounIdDetails(
+      data.nounId.toString(),
+      data.eachFNounPrice.toString(),
+      data.divisor.toString(),
+      {
+        gasPrice: 5000000,
       }
+    );
+    const receipt = await tx.wait();
+    if (receipt.status === 1) {
+      return true;
     }
+    //   const attestation = await eas.getAttestation(newAttestationUID);
+
+    //   if (attestation.attester == data.userAddress) {
+    //     alert(`Set Fractional Noun Details to the Contract`);
+    //     const trx = await tNounContract.setTNounIdDetails(
+    //       data.nounId.toString(),
+    //       data.eachFNounPrice.toString(),
+    //       data.divisor.toString(),
+    //       {
+    //         gasPrice: 5000000,
+    //       }
+    //     );
+    //     const receipt = await trx.wait();
+    //     if (receipt.status === 1) {
+    //       return true;
+    //     }
+    //   }
+    // } catch (error) {
+    //   if (error.reason) {
+    //     console.error("Custom Error:", error.reason);
+    //   } else {
+    //     console.error("Unknown Error:", error);
+    //   }
+    //   throw error; // Re-throw for handling in calling function
+    // }
+
     return false;
   } catch (error) {
     console.error("Unable to run OnChain Attest: ", error);
