@@ -1,6 +1,6 @@
-import { createContext, useContext, useState } from "react";
+// context/Store.jsx
+import React, { createContext, useContext, useState } from "react";
 
-// Create the context
 const GlobalContext = createContext();
 
 export const GlobalContextProvider = ({ children }) => {

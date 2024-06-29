@@ -6,7 +6,7 @@ export const Nouns = [
     fNounPrice: 0,
     endTimestamp: 0,
     divisor: 1,
-    approved: false,
+    approved: true,
     tokenized: false,
   },
   {
