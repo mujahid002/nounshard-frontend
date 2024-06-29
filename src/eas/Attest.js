@@ -4,7 +4,6 @@ import {
 } from "@ethereum-attestation-service/eas-sdk";
 import { ethers } from "ethers";
 import axios from "axios";
-import { useGlobalContext } from "../context/Store";
 
 import {
   EAS_ADDRESS,
@@ -12,23 +11,23 @@ import {
   NOUN_ADDRESS,
   TOKENIZED_NOUN_ADDRESS,
   FRACTIONAL_NOUN_ADDRESS,
+  tNounContract,
+  signer,
 } from "@/constants/index";
 
 export const attestNoun = async (data) => {
-  const { userAddress, nativeBalance, setUserAddress, setNativeBalance } =
-    useGlobalContext();
   try {
     if (!data) {
       throw new Error("Invalid input parameters");
     }
 
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    console.log("Provider:", provider);
+    // const provider = new ethers.BrowserProvider(window.ethereum);
+    // console.log("Provider:", provider);
 
-    await window.ethereum.request({ method: "eth_requestAccounts" });
+    // await window.ethereum.request({ method: "eth_requestAccounts" });
 
-    const signer = await provider.getSigner(userAddress);
-    console.log("Signer:", signer);
+    // const signer = await provider.getSigner(userAddress);
+    // console.log("Signer:", signer);
 
     // Initialize EAS instance
     const eas = new EAS150(EAS_ADDRESS);
@@ -36,9 +35,14 @@ export const attestNoun = async (data) => {
     // Connect signer to EAS instance
     eas.connect(signer);
 
+    const fractionalNounPriceInWei = ethers.parseUnits(
+      data.eachFNounPrice.toString(),
+      18
+    );
+
     // Initialize SchemaEncoder with the schema string
     const schemaEncoder = new SchemaEncoder(
-      "address AounAddress, uint256 NounId, address TokenizedNounAddress, address FractionalNounAddress"
+      "address NounAddress, address TokenizedNounAddress, address FractionalNounAddress, uint256 NounId, uint256 FractionalNounPrice, uint48 EndTimestamp, uint8 Divisor"
     );
     const encodedData = schemaEncoder.encodeData([
       { name: "NounAddress", value: NOUN_ADDRESS, type: "address" },
@@ -55,7 +59,7 @@ export const attestNoun = async (data) => {
       { name: "NounId", value: data.nounId, type: "uint256" },
       {
         name: "FractionalNounPrice",
-        value: data.eachFNounPrice,
+        value: fractionalNounPriceInWei,
         type: "uint256",
       },
       { name: "EndTimestamp", value: data.endTimestamp, type: "uint48" },
@@ -63,20 +67,46 @@ export const attestNoun = async (data) => {
     ]);
 
     // Attest the data
-    const tx = await eas.attest({
-      schema: SCHEMA_UID,
-      data: {
-        recipient: userAddress,
-        expirationTime: data.endTimestamp,
-        revocable: false,
-        data: encodedData,
-      },
-    });
+    try {
+      const trx = await eas.attest({
+        schema: SCHEMA_UID,
+        data: {
+          recipient: TOKENIZED_NOUN_ADDRESS,
+          expirationTime: data.endTimestamp,
+          revocable: false,
+          data: encodedData,
+        },
+      });
+    } catch (error) {
+      if (error.reason) {
+        console.error("Custom Error:", error.reason);
+      } else {
+        console.error("Unknown Error:", error);
+      }
+      throw error; // Re-throw for handling in calling function
+    }
 
-    const newAttestationUID = await tx.wait();
+    const newAttestationUID = await trx.wait();
 
     console.log("New attestation UID:", newAttestationUID);
-    return newAttestationUID;
+    const attestation = await eas.getAttestation(uid);
+
+    if (attestation.attester == userAddress) {
+      alert(`Set Fractional Noun Details to the Contract`);
+      const trx = await tNounContract.setTNounIdDetails(
+        data.nounId.toString(),
+        data.eachFNounPrice.toString(),
+        data.divisor.toString(),
+        {
+          gasPrice: 5000000,
+        }
+      );
+      const receipt = await trx.wait();
+      if (receipt.status === 1) {
+        return true;
+      }
+    }
+    return false;
   } catch (error) {
     console.error("Unable to run OnChain Attest: ", error);
     throw error; // Rethrow the error for handling in the calling function
