@@ -3,7 +3,6 @@ import {
   SchemaEncoder,
 } from "@ethereum-attestation-service/eas-sdk";
 import { ethers } from "ethers";
-import axios from "axios";
 
 import {
   EAS_ADDRESS,

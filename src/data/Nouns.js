@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 
 export const Nouns = [
   {
-    nounId: 5,
+    nounId: 9,
     fNounPrice: 0,
     endTimestamp: 0,
     divisor: 1,
@@ -10,7 +10,7 @@ export const Nouns = [
     tokenized: true,
   },
   {
-    nounId: 6,
+    nounId: 8,
     fNounPrice: 0,
     endTimestamp: 0,
     divisor: 1,
@@ -27,7 +27,7 @@ export const Nouns = [
   },
 
   {
-    nounId: 8,
+    nounId: 6,
     fNounPrice: 0,
     endTimestamp: 0,
     divisor: 1,
